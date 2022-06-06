@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
+use Illuminate\Http\Request;
+
 
 class CompanyController extends Controller
 {
@@ -40,7 +42,10 @@ class CompanyController extends Controller
      */
     public function store(StoreCompanyRequest $request)
     {
-        //
+        $empresa = Company::create($request->all());
+        return response()->json([
+            'message' => 'Empresa registrada',
+        ], 201);
     }
 
     /**
