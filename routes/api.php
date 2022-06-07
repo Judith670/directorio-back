@@ -19,14 +19,16 @@ Route::post('/v1/login', [TokensController::class, 'authenticate']);
 Route::post('/v1/register', [TokensController::class, 'register']);
 
 Route::group(['middleware' => ['jwt.verify'],  'prefix' => 'v1'], function() {
+    Route::post('/profile', [TokensController::class, 'profile']);
     Route::post('user',[TokensController::class, 'getAuthenticatedUser']);
     Route::get('/logout', [TokensController::class, 'logout']);
     Route::post('/refresh', [TokensController::class, 'refresh']);
-    Route::post('/profile', [TokensController::class, 'profile']);
-    Route::apiResources([
-        'empresas' => 'Api\CompanyController'
-        ]);
 
+    Route::apiResources([
+        '/empresas' => 'Api\CompanyController',
+        '/usuarios' => 'Api\UserController'
+        ]);
 });
+
 
 

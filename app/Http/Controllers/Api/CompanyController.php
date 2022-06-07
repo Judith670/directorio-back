@@ -19,19 +19,7 @@ class CompanyController extends Controller
     public function index()
     {
         $empresas = Company::all();
-        return response()->json([
-            "data" => $empresas
-        ],200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return response()->json($empresas,200);
     }
 
     /**
@@ -54,22 +42,13 @@ class CompanyController extends Controller
      * @param  \App\Models\Company  $company
      * @return \Illuminate\Http\Response
      */
-    public function show(Company $company)
+    public function show($id)
     {
-        //
+        $empresa = Company::findOrFail($id);
+        return response()->json([
+            $empresa
+        ],200);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Company  $company
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Company $company)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      *
@@ -77,9 +56,13 @@ class CompanyController extends Controller
      * @param  \App\Models\Company  $company
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateCompanyRequest $request, Company $company)
+    public function update(UpdateCompanyRequest $request,$id)
     {
-        //
+        $empresa = Company::findOrFail($id);
+        $empresa->update($request->all());
+        return response()->json([
+            'message' => 'Empresa actualizada',
+        ], 201);
     }
 
     /**
@@ -88,8 +71,12 @@ class CompanyController extends Controller
      * @param  \App\Models\Company  $company
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Company $company)
+    public function destroy($id)
     {
-        //
+        $empresa = Company::findOrFail($id);
+        $empresa->delete();
+        return response()->json([
+            'message' => 'Empresa eliminada',
+        ], 201);
     }
 }

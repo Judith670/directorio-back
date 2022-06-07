@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use JWTAuth;
@@ -85,20 +86,21 @@ class TokensController extends Controller
 
     }
 
-    public function getAuthenticatedUser()
+    public function getAuthenticatedUser(Request $request)
     {
-        try {
-            if (!$user = JWTAuth::parseToken()->authenticate()) {
-                    return response()->json(['user_not_found'], 404);
-            }
-        } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-                return response()->json(['token_expired'], $e->getStatusCode());
-        } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-                return response()->json(['token_invalid'], $e->getStatusCode());
-        } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
-                return response()->json(['token_absent'], $e->getStatusCode());
-        }
-        return response()->json(compact('user'));
+        //Validamos que la request tenga el token
+        $this->validate($request, [
+            'token' => 'required'
+        ]);
+        //Realizamos la autentificación
+        $user = JWTAuth::authenticate($request->token);
+        //Si no hay usuario es que el token no es valido o que ha expirado
+        if(!$user)
+            return response()->json([
+                'message' => 'Invalid token / token expired',
+            ], 401);
+        //Devolvemos los datos del usuario si todo va bien.
+        return response()->json(['user' => $user]);
     }
 
     /**
@@ -132,6 +134,7 @@ class TokensController extends Controller
      */
     public function refresh()
     {
+
         $token = JWTAuth::getToken();
         try{
             $token = JWTAuth::refresh($token);
@@ -180,5 +183,17 @@ class TokensController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
         ]);
+    }
+
+
+    public function toUser($token = false)
+    {
+        $payload = $this->getPayload($token);
+
+        if (! $user = $this->user->getBy($this->identifier, $payload['sub'])) {
+            return false;
+        }
+
+        return $user;
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCompanyRequest extends FormRequest
+class UpdateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -16,7 +16,7 @@ class StoreCompanyRequest extends FormRequest
         return true;
     }
 
-    /**
+     /**
      * Get the validation rules that apply to the request.
      *
      * @return array
@@ -24,8 +24,9 @@ class StoreCompanyRequest extends FormRequest
     public function rules()
     {
         return [
-            'company_name' => 'required',
-            'category' => 'required',
+            'name' => 'required',
+            'phone' => 'phone|unique:users,phone,'.$this->route('usuarios'),
+            'email' => 'required|email|unique:users,email,'.$this->route('usuarios'),
         ];
     }
 
@@ -37,8 +38,10 @@ class StoreCompanyRequest extends FormRequest
     public function messages()
     {
         return [
-            'company_name.required' => 'Nombre de empresa es obligatorio',
-            'category.required' => 'Categoria obligatorio',
+            'name.required' => 'Nombre es obligatorio',
+            'email.required' => 'Correo obligatorio',
+            'email.unique' => 'El correo ya fue registrado',
+            'phone.unique' => 'El telefono ya fue registrado',
         ];
     }
 }
