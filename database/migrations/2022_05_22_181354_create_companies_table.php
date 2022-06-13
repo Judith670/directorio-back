@@ -17,6 +17,10 @@ class CreateCompaniesTable extends Migration
             $table->id();
             $table->string('company_name');
             $table->string('category');
+            $table->string('telephone')->nullable();
+            $table->string('address')->nullable();
+            $table->string('suburb')->nullable();
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }

@@ -4,16 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
+use Illuminate\Http\JsonResponse;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-use JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Log;
+// use JWTAuth;
 use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth as JWT;
 
 class TokensController extends Controller
 {
@@ -30,7 +30,7 @@ class TokensController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password)
             ]);
-        $token = JWTAuth::fromUser($user);
+        $token = JWT::fromUser($user);
 
         return response()->json([
             'message' => 'User successfully registered',
@@ -60,7 +60,7 @@ class TokensController extends Controller
             if( isset($user->id)){
                 if(Hash::check($request->password, $user->password)){
                     // $token = $user->createToken("auth_token")->plainTextToken;
-                    $token = JWTAuth::fromUser($user);
+                    $token = JWT::fromUser($user);
                     return response()->json([
                         "status" => 1,
                         "message" => "Inicio de sesion correcto",
@@ -93,7 +93,7 @@ class TokensController extends Controller
             'token' => 'required'
         ]);
         //Realizamos la autentificación
-        $user = JWTAuth::authenticate($request->token);
+        $user = JWT::authenticate($request->token);
         //Si no hay usuario es que el token no es valido o que ha expirado
         if(!$user)
             return response()->json([
@@ -111,9 +111,9 @@ class TokensController extends Controller
     public function logout()
     {
         // auth()->logout();
-        $token = JWTAuth::getToken();
+        $token = JWT::getToken();
         try {
-            JWTAuth::invalidate($token);
+            JWT::invalidate($token);
             return response()->json([
                 'success' => true,
                 'message' => 'Logout successful'
@@ -135,9 +135,9 @@ class TokensController extends Controller
     public function refresh()
     {
 
-        $token = JWTAuth::getToken();
+        $token = JWT::getToken();
         try{
-            $token = JWTAuth::refresh($token);
+            $token = JWT::refresh($token);
             return response()->json([
                 'sucess' => true,
                 'token' => $token
@@ -164,9 +164,22 @@ class TokensController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function profile()
+    public function profile(Request $request): JsonResponse
     {
-        return response()->json(auth()->user());
+        //Validamos que la request tenga el token
+        $this->validate($request, [
+            'token' => 'required'
+        ]);
+        //Realizamos la autentificación
+        $user = JWT::authenticate($request->token);
+        //Si no hay usuario es que el token no es valido o que ha expirado
+        if(!$user)
+            return response()->json([
+                'message' => 'Invalid token / token expired',
+            ], 401);
+        //Devolvemos los datos del usuario si todo va bien.
+        return response()->json(['user' => $user]);
+
     }
 
     /**
@@ -186,14 +199,4 @@ class TokensController extends Controller
     }
 
 
-    public function toUser($token = false)
-    {
-        $payload = $this->getPayload($token);
-
-        if (! $user = $this->user->getBy($this->identifier, $payload['sub'])) {
-            return false;
-        }
-
-        return $user;
-    }
 }

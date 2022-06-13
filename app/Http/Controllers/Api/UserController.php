@@ -124,12 +124,13 @@ class UserController extends Controller
      * @param  \App\Models\User  $company
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateUserRequest $request,$id)
+    public function update(Request $request,$id)
     {
         $usuario = User::findOrFail($id);
         $usuario->update($request->all());
         return response()->json([
             'message' => 'Usuario actualizado',
+            'usuario' => $usuario,
         ], 201);
     }
 
@@ -144,7 +145,7 @@ class UserController extends Controller
         $usuario = User::findOrFail($id);
         $usuario->delete();
         return response()->json([
-            'message' => 'Usuario eliminado',
+            'message' => 'Usuario eliminad',
         ], 201);
     }
 }
